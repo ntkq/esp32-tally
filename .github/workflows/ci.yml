@@ -1,0 +1,25 @@
+name: CI demo
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t esp32-tally-api .
+
+      - name: Run container
+        run: docker run -d -p 5000:5000 --name api esp32-tally-api
+
+      - name: Smoke test
+        run: |
+          sleep 5
+          curl -f http://localhost:5000/ || exit 1
+          curl -f -X POST http://localhost:5000/ -H "Content-Type: application/json" -d '{"complete": true}' || exit 1
